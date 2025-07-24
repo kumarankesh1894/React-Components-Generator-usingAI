@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@codesandbox/sandpack-react": "^2.20.0",
+    "@codesandbox/sandpack-themes": "^2.0.21",
     "@tailwindcss/postcss": "^4.1.11",
     "next": "15.4.3",
     "postcss": "^8.5.6",
