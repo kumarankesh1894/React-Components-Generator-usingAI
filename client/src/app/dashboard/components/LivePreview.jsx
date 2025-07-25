@@ -6,25 +6,21 @@ import generateSandboxFiles from "../utils/generateSanboxFiles";
 
 export default function LivePreview({ code, css }) {
   const [files, setFiles] = useState(null);
+  const [isTSX, setIsTSX] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // TypeScript detection
-    const isTS = code.includes("interface") || code.includes(":") || code.includes("tsx");
-
-    if (isTS) {
-      setFiles(null);
-      setError("TypeScript is not supported in the live preview. Please provide only JS/JSX code.");
-      return;
-    }
+    if (!code?.trim()) return;
 
     try {
-      const generated = generateSandboxFiles(code, css);
-      setFiles(generated);
+      const { files, isTSX } = generateSandboxFiles(code, css);
+      setFiles(files);
+      setIsTSX(isTSX);
       setError("");
     } catch (err) {
+      console.error("Live Preview Error:", err);
       setFiles(null);
-      setError("Something went wrong in live preview generation.");
+      setError("⚠️ Live Preview Error: Something went wrong rendering the component.");
     }
   }, [code, css]);
 
@@ -34,12 +30,13 @@ export default function LivePreview({ code, css }) {
 
       {error ? (
         <div className="bg-red-100 text-red-800 p-4 rounded-md shadow text-sm">
-          <strong>⚠️ Live Preview Error:</strong> <br />
+          <strong>⚠️ Live Preview Error:</strong>
+          <br />
           {error}
         </div>
       ) : files ? (
         <Sandpack
-          template="react"
+          template={isTSX ? "react-ts" : "react"}
           files={files}
           theme={githubDark}
           options={{

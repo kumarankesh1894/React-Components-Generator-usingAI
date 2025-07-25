@@ -13,6 +13,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [prompt, setPrompt] = useState("");
   const [output, setOutput] = useState("");
+  const [cssCode, setCssCode] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
   const [editMessage, setEditMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -75,6 +76,7 @@ export default function DashboardPage() {
 
       const data = await res.json();
       setOutput(data.code || "// No code returned");
+      setCssCode(data.css || "");
       setExpandedSection("output");
     } catch (err) {
       setOutput("// Error generating code");
@@ -102,6 +104,8 @@ export default function DashboardPage() {
       const data = await res.json();
       const aiResponse = { sender: "ai", text: data.code || "// No edit returned" };
       setOutput(data.code || output);
+      setCssCode(data.css || cssCode);
+
       setChatMessages((prev) => [...prev, aiResponse]);
       setEditMessage("");
     } catch {
@@ -209,8 +213,9 @@ export default function DashboardPage() {
               </button>
               {expandedSection === "output" && (
                 <div className="mt-4 space-y-4">
-                  <GeneratedOutput output={output} />
-                  <LivePreview code={output} />
+                  <GeneratedOutput output={output} css={cssCode} />
+                  <LivePreview code={output} css={cssCode} />
+
                 </div>
               )}
             </section>

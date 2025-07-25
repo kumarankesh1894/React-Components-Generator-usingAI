@@ -1,10 +1,11 @@
+// controllers/codeController.js
+
 const Generation = require("../models/Generation");
 const axios = require("axios");
 const extractCodeBlocks = require("../utils/extractCodeBlock");
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
-// POST /api/generate - Generate new code
 const generateCode = async (req, res) => {
   const { prompt, sessionId } = req.body;
   const userId = req.user.userId;
@@ -21,8 +22,7 @@ const generateCode = async (req, res) => {
         messages: [
           {
             role: "system",
-            content:
-              "You are an expert frontend developer. Generate high-quality, clean, readable React component code.",
+            content: "You are an expert React frontend developer. Respond with clean JSX/TSX and CSS code blocks only.",
           },
           {
             role: "user",
@@ -38,25 +38,27 @@ const generateCode = async (req, res) => {
       }
     );
 
-    const rawContent =
-      aiResponse.data.choices?.[0]?.message?.content?.trim() || "";
-    const code = extractCodeBlocks(rawContent) || "// No code generated";
+    const rawContent = aiResponse.data.choices?.[0]?.message?.content?.trim() || "";
+    const blocks = extractCodeBlocks(rawContent);
+
+    const jsxCode = blocks?.tsx || blocks?.jsx || "// No JSX code";
+    const cssCode = blocks?.css || "";
 
     await Generation.create({
       userId,
       sessionId,
       prompt,
-      code,
+      code: jsxCode,
+      css: cssCode,
     });
 
-    res.json({ code });
+    res.json({ code: jsxCode, css: cssCode });
   } catch (err) {
     console.error("AI generation error:", err?.response?.data || err.message);
     res.status(500).json({ error: "Failed to generate code" });
   }
 };
 
-// POST /api/edit - Edit existing code
 const editCode = async (req, res) => {
   const { prompt, code } = req.body;
 
@@ -72,8 +74,7 @@ const editCode = async (req, res) => {
         messages: [
           {
             role: "system",
-            content:
-              "You are a professional React developer. Modify the provided code based on user instructions.",
+            content: "You are a professional React developer. Respond with updated JSX/TSX and CSS code blocks only.",
           },
           {
             role: "user",
@@ -90,16 +91,18 @@ const editCode = async (req, res) => {
     );
 
     const rawContent = aiResponse.data.choices?.[0]?.message?.content?.trim() || "";
-    const editedCode =extractCodeBlocks(rawContent) || "// No edited code returned";
-    
-    res.json({ code: editedCode });
+    const blocks = extractCodeBlocks(rawContent);
+
+    const editedJsx = blocks?.tsx || blocks?.jsx || "// No edited JSX returned";
+    const editedCss = blocks?.css || "";
+
+    res.json({ code: editedJsx, css: editedCss });
   } catch (err) {
     console.error("AI edit error:", err?.response?.data || err.message);
     res.status(500).json({ error: "Failed to edit code" });
   }
 };
 
-// GET /api/history - Load generations for a specific session
 const getGenerations = async (req, res) => {
   const { sessionId } = req.query;
 
