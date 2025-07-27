@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Sandpack } from "@codesandbox/sandpack-react";
 import { githubDark } from "@codesandbox/sandpack-themes";
+import "react-codesandboxer/dist/codesandboxer.css";
 import generateSandboxFiles from "../utils/generateSanboxFiles";
 
 export default function LivePreview({ code, css }) {
@@ -38,6 +39,7 @@ export default function LivePreview({ code, css }) {
         <Sandpack
           template={isTSX ? "react-ts" : "react"}
           files={files}
+          
           theme={githubDark}
           options={{
             showConsole: false,

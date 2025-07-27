@@ -8,6 +8,7 @@ import EditChat from "./components/EditChat";
 import GenerationHistory from "./components/GenerationHistory";
 import SessionSelector from "./components/SessionSelector";
 import LivePreview from "./components/Livepreview";
+import CodeTabs from "./components/CodeTabs";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -213,11 +214,13 @@ export default function DashboardPage() {
               </button>
               {expandedSection === "output" && (
                 <div className="mt-4 space-y-4">
-                  <GeneratedOutput output={output} css={cssCode} />
+                  <GeneratedOutput/>
+                  <CodeTabs jsxCode={output} cssCode={cssCode} />
                   <LivePreview code={output} css={cssCode} />
 
                 </div>
               )}
+              
             </section>
           )}
 
