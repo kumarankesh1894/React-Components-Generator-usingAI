@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import PromptInput from "./components/PromptInput";
 import GeneratedOutput from "./components/GeneratedOutput";
@@ -22,6 +22,148 @@ export default function DashboardPage() {
   const [generations, setGenerations] = useState([]);
   const [selectedSessionId, setSelectedSessionId] = useState(null);
   const [expandedSection, setExpandedSection] = useState("prompt");
+  
+  // Auto-save related state and refs
+  const autoSaveTimeoutRef = useRef(null);
+  const lastSavedStateRef = useRef(null);
+
+  // Helper function to get current state for comparison and saving
+  const getCurrentState = useCallback(() => {
+    return {
+      prompt,
+      code: output,
+      css: cssCode,
+      chatMessages,
+      expandedSection,
+      sessionId: selectedSessionId,
+    };
+  }, [prompt, output, cssCode, chatMessages, expandedSection, selectedSessionId]);
+
+  // Helper function to check if state has changed
+  const hasStateChanged = useCallback((currentState) => {
+    const lastSaved = lastSavedStateRef.current;
+    if (!lastSaved) return true;
+    
+    return (
+      lastSaved.prompt !== currentState.prompt ||
+      lastSaved.code !== currentState.code ||
+      lastSaved.css !== currentState.css ||
+      lastSaved.expandedSection !== currentState.expandedSection ||
+      JSON.stringify(lastSaved.chatMessages) !== JSON.stringify(currentState.chatMessages)
+    );
+  }, []);
+
+  // Debounced auto-save function
+  const performAutoSave = useCallback(async (currentState) => {
+    if (!selectedSessionId || !hasStateChanged(currentState)) {
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/autosave', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          sessionId: selectedSessionId,
+          currentCode: currentState.code,
+          currentCss: currentState.css,
+          currentPrompt: currentState.prompt,
+          chatMessages: currentState.chatMessages,
+          expandedSection: currentState.expandedSection,
+        }),
+      });
+
+      if (response.ok) {
+        lastSavedStateRef.current = { ...currentState };
+        console.log('Auto-save successful');
+      } else {
+        console.warn('Auto-save failed:', response.status);
+      }
+    } catch (error) {
+      console.error('Auto-save error:', error);
+    }
+  }, [selectedSessionId, hasStateChanged]);
+
+  // Debounced auto-save trigger
+  const triggerAutoSave = useCallback(() => {
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      const currentState = getCurrentState();
+      performAutoSave(currentState);
+    }, 2000); // 2 second debounce
+  }, [getCurrentState, performAutoSave]);
+
+  // Auto-save effect - monitor changes in prompt, output, CSS, chat messages, and expanded section
+  useEffect(() => {
+    if (!selectedSessionId) return;
+    
+    // Skip auto-save during loading to avoid saving intermediate states
+    if (loading) return;
+    
+    triggerAutoSave();
+  }, [prompt, output, cssCode, chatMessages, expandedSection, selectedSessionId, loading, triggerAutoSave]);
+
+  // Resume session effect - load saved state when session changes
+  useEffect(() => {
+    const resumeSession = async () => {
+      if (!selectedSessionId) return;
+      
+      try {
+        const response = await fetch(`http://localhost:5000/api/autosave/${selectedSessionId}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        
+        if (response.ok) {
+          const savedState = await response.json();
+          
+          // Restore saved state
+          if (savedState.currentPrompt) setPrompt(savedState.currentPrompt);
+          if (savedState.currentCode) setOutput(savedState.currentCode);
+          if (savedState.currentCss) setCssCode(savedState.currentCss);
+          if (savedState.chatMessages) setChatMessages(savedState.chatMessages);
+          if (savedState.expandedSection) setExpandedSection(savedState.expandedSection);
+          
+          // Update last saved state reference
+          lastSavedStateRef.current = {
+            prompt: savedState.currentPrompt || '',
+            code: savedState.currentCode || '',
+            css: savedState.currentCss || '',
+            chatMessages: savedState.chatMessages || [],
+            expandedSection: savedState.expandedSection || 'prompt',
+            sessionId: selectedSessionId,
+          };
+          
+          console.log('Session state resumed successfully');
+        } else if (response.status === 404) {
+          // No saved state exists for this session - this is normal for new sessions
+          console.log('No saved state found for session - starting fresh');
+        } else {
+          console.warn('Failed to resume session state:', response.status);
+        }
+      } catch (error) {
+        console.error('Error resuming session state:', error);
+      }
+    };
+    
+    resumeSession();
+  }, [selectedSessionId]);
+
+  // Cleanup auto-save timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -55,9 +197,9 @@ export default function DashboardPage() {
     router.replace("/login");
   };
 
-  const handleGenerate = async () => {
-    if (!prompt.trim() || !selectedSessionId) {
-      alert("Please select or create a session before generating code.");
+  const handleGenerate = async (images = []) => {
+    if ((!prompt.trim() && images.length === 0) || !selectedSessionId) {
+      alert("Please select or create a session and provide a prompt or images before generating code.");
       return;
     }
 
@@ -66,13 +208,32 @@ export default function DashboardPage() {
     setChatMessages([]);
 
     try {
+      // Prepare form data for multipart upload if images are present
+      let requestBody;
+      let headers = {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      };
+
+      if (images.length > 0) {
+        const formData = new FormData();
+        formData.append('prompt', prompt);
+        formData.append('sessionId', selectedSessionId);
+        
+        images.forEach((image, index) => {
+          formData.append(`images`, image.file);
+        });
+        
+        requestBody = formData;
+        // Don't set Content-Type header - let browser set it with boundary for multipart
+      } else {
+        headers['Content-Type'] = 'application/json';
+        requestBody = JSON.stringify({ prompt, sessionId: selectedSessionId });
+      }
+
       const res = await fetch("http://localhost:5000/api/generate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ prompt, sessionId: selectedSessionId }),
+        headers,
+        body: requestBody,
       });
 
       const data = await res.json();
@@ -80,6 +241,7 @@ export default function DashboardPage() {
       setCssCode(data.css || "");
       setExpandedSection("output");
     } catch (err) {
+      console.error('Generation error:', err);
       setOutput("// Error generating code");
     } finally {
       setLoading(false);

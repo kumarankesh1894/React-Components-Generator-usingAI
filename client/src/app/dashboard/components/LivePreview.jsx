@@ -1,8 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Sandpack } from "@codesandbox/sandpack-react";
-import { githubDark } from "@codesandbox/sandpack-themes";
-import "react-codesandboxer/dist/codesandboxer.css";
+import { atomDark } from "@codesandbox/sandpack-themes";
 import generateSandboxFiles from "../utils/generateSanboxFiles";
 
 export default function LivePreview({ code, css }) {
@@ -39,14 +38,16 @@ export default function LivePreview({ code, css }) {
         <Sandpack
           template={isTSX ? "react-ts" : "react"}
           files={files}
-          
-          theme={githubDark}
+          theme={atomDark}
           options={{
             showConsole: false,
             showTabs: true,
             wrapContent: true,
             editorHeight: 300,
             previewHeight: 300,
+            autorun: true,
+            recompileMode: "immediate",
+            initMode: "user-visible"
           }}
         />
       ) : (

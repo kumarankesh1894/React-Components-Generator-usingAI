@@ -17,20 +17,25 @@ function generateSandboxFiles(componentCode, cssCode = "") {
     componentCode.includes("className=") && cssCode.trim() === "";
 
   // Step 4: Construct base App component
-  const importCss = !isTailwind && cssCode.trim() ? `import "./style.css";\n` : "";
+  const needsCssImport = !isTailwind; // Always import CSS for consistent styling
+  const importCss = needsCssImport ? `import "./style.css";\n` : "";
 
-  const appCode = `
-    import React from "react";
-    ${importCss}import ${componentName} from "./${componentName}";
+  // Step 4: Check if component takes children or is self-closing
+  const takesChildren = componentCode.includes('children') || componentCode.includes('{children}');
+  const componentUsage = takesChildren ? 
+    `<${componentName}>Live Component</${componentName}>` : 
+    `<${componentName} />`;
 
-    export default function App() {
-      return (
-        <div className="${isTailwind ? "p-4 bg-green-100 min-h-screen" : "app-container"}">
-          <${componentName}>Live Button</${componentName}>
-        </div>
-      );
-    }
-  `;
+  const appCode = `import React from "react";
+${importCss}import ${componentName} from "./${componentName}";
+
+export default function App() {
+  return (
+    <div className="${isTailwind ? "p-4 bg-gray-100 min-h-screen flex items-center justify-center" : "app-container"}">
+      ${componentUsage}
+    </div>
+  );
+}`;
 
   // Step 5: Create files
   const files = {
@@ -40,7 +45,29 @@ function generateSandboxFiles(componentCode, cssCode = "") {
 
   // Step 6: Add style.css if present and not Tailwind
   if (!isTailwind && cssCode.trim()) {
-    files["/style.css"] = cssCode;
+    const defaultAppStyles = `
+.app-container {
+  padding: 2rem;
+  min-height: 100vh;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+`;
+    files["/style.css"] = defaultAppStyles + cssCode;
+  } else if (!isTailwind) {
+    // Add minimal default styles even without custom CSS
+    files["/style.css"] = `
+.app-container {
+  padding: 2rem;
+  min-height: 100vh;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}`;
   }
 
   return { files, isTSX };
