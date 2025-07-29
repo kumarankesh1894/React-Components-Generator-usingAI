@@ -13,18 +13,21 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    
+
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/auth/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        }
+      );
       const data = await res.json();
 
       if (res.ok) {
         localStorage.setItem("token", data.token);
-        router.push("/dashboard"); 
+        router.push("/dashboard");
       } else {
         setError(data.error || "Login failed");
       }
@@ -42,7 +45,9 @@ export default function LoginPage() {
           <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500">
             Welcome Back
           </h1>
-          <p className="text-gray-300 text-sm sm:text-base">Sign in to your account</p>
+          <p className="text-gray-300 text-sm sm:text-base">
+            Sign in to your account
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
@@ -59,7 +64,7 @@ export default function LoginPage() {
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-2">
               Password
@@ -74,8 +79,8 @@ export default function LoginPage() {
             />
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
             className="btn-primary w-full flex items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-4"
           >
@@ -92,7 +97,10 @@ export default function LoginPage() {
           <div className="text-center pt-4">
             <p className="text-gray-400 text-xs sm:text-sm">
               Don't have an account?{" "}
-              <Link href="/signup" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">
+              <Link
+                href="/signup"
+                className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
+              >
                 Sign up
               </Link>
             </p>

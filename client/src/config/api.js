@@ -1,28 +1,30 @@
 // API Configuration
 export const API_CONFIG = {
   // Get the API URL from environment variables
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
-  
+  baseURL:
+    process.env.REACT_APP_API_URL ||
+    "https://component-generator-backend-4l1y.onrender.com",
+
   // API endpoints
   endpoints: {
     auth: {
-      login: '/api/auth/login',
-      signup: '/api/auth/signup',
-      logout: '/api/logout'
+      login: "/api/auth/login",
+      signup: "/api/auth/signup",
+      logout: "/api/logout",
     },
     ai: {
-      generate: '/api/generate',
-      edit: '/api/edit'
+      generate: "/api/generate",
+      edit: "/api/edit",
     },
     sessions: {
-      list: '/api/sessions',
-      create: '/api/sessions',
-      delete: '/api/sessions'
+      list: "/api/sessions",
+      create: "/api/sessions",
+      delete: "/api/sessions",
     },
-    history: '/api/history',
-    autosave: '/api/autosave',
-    health: '/api/health'
-  }
+    history: "/api/history",
+    autosave: "/api/autosave",
+    health: "/api/health",
+  },
 };
 
 // Helper function to get full API URL
@@ -33,14 +35,14 @@ export const getApiUrl = (endpoint) => {
 // Helper function for making API requests with proper headers
 export const apiRequest = async (endpoint, options = {}) => {
   const url = getApiUrl(endpoint);
-  const token = localStorage.getItem('token');
-  
+  const token = localStorage.getItem("token");
+
   const defaultOptions = {
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...(token && { Authorization: `Bearer ${token}` }),
     },
-    credentials: 'include', // Important for CORS
+    credentials: "include", // Important for CORS
   };
 
   const mergedOptions = {

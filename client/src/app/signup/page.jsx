@@ -1,35 +1,38 @@
 "use client";
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
-  const [error, setError] = useState('');
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    
+    setError("");
+
     try {
-      const res = await fetch('http://localhost:5000/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/auth/signup`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        }
+      );
       const data = await res.json();
 
       if (res.ok) {
-        localStorage.setItem('token', data.token);
-        router.push('/');
+        localStorage.setItem("token", data.token);
+        router.push("/");
       } else {
-        setError(data.error || 'Signup failed');
+        setError(data.error || "Signup failed");
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      setError("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -42,7 +45,9 @@ export default function SignupPage() {
           <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500">
             Create Account
           </h1>
-          <p className="text-gray-300 text-sm sm:text-base">Join us to explore new possibilities</p>
+          <p className="text-gray-300 text-sm sm:text-base">
+            Join us to explore new possibilities
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
@@ -59,7 +64,7 @@ export default function SignupPage() {
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-2">
               Email Address
@@ -94,7 +99,7 @@ export default function SignupPage() {
             className="btn-primary w-full flex items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-4"
           >
             {loading && <div className="spinner"></div>}
-            {loading ? 'Creating Account...' : 'Sign Up'}
+            {loading ? "Creating Account..." : "Sign Up"}
           </button>
 
           {error && (
@@ -105,8 +110,11 @@ export default function SignupPage() {
 
           <div className="text-center pt-4">
             <p className="text-gray-400 text-xs sm:text-sm">
-              Already have an account?{' '}
-              <Link href="/login" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">
+              Already have an account?{" "}
+              <Link
+                href="/login"
+                className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
+              >
                 Log in
               </Link>
             </p>

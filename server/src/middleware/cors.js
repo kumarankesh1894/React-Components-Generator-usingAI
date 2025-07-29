@@ -23,8 +23,8 @@ const corsOptions = {
       
 
       // Preview URLs (Netlify generates these for pull requests)
-      /^https:\/\/deploy-preview-\d+--your-frontend-name\.netlify\.app$/,
-      /^https:\/\/[a-f0-9-]+--your-frontend-name\.netlify\.app$/,
+      /^https:\/\/deploy-preview-\d+--aicomponentgenerator\.netlify\.app$/,
+      /^https:\/\/[a-f0-9-]+--aicomponentgenerator\.netlify\.app$/,
     ];
 
     // In development, be more permissive
