@@ -11,10 +11,10 @@
   status = 200
 
 [context.production.environment]
-  NEXT_PUBLIC_API_URL = "https://your-backend-name.onrender.com"
+  NEXT_PUBLIC_API_URL = "https://component-generator-backend-4l1y.onrender.com"
 
 [context.deploy-preview.environment]
-  NEXT_PUBLIC_API_URL = "https://your-backend-name.onrender.com"
+  NEXT_PUBLIC_API_URL = "https://component-generator-backend-4l1y.onrender.com"
 
 [context.branch-deploy.environment]
-  NEXT_PUBLIC_API_URL = "https://your-backend-name.onrender.com"
+  NEXT_PUBLIC_API_URL = "https://component-generator-backend-4l1y.onrender.com"
