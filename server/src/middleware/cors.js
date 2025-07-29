@@ -19,7 +19,7 @@ const corsOptions = {
       process.env.CLIENT_URL || "http://localhost:3000", // Production URL from env
 
       // Production domains - Replace with your actual Netlify URL
-      "https://aicomponentgenerator.netlify.app",
+      //"https://aicomponentgenerator.netlify.app",
       
 
       // Preview URLs (Netlify generates these for pull requests)

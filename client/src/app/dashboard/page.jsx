@@ -9,6 +9,7 @@ import GenerationHistory from "./components/GenerationHistory";
 import SessionSelector from "./components/SessionSelector";
 import CodeTabs from "./components/CodeTabs";
 import PreviewModal from "./components/PreviewModal";
+import LivePreview from "./components/LivePreview";
 
 const Sidebar = ({
   onSelectSession,
@@ -144,7 +145,7 @@ export default function DashboardPage() {
 
       try {
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/autosave`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/autosave`,
           {
             method: "POST",
             headers: {
@@ -208,7 +209,7 @@ export default function DashboardPage() {
 
       try {
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/autosave/${selectedSessionId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/autosave/${selectedSessionId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -267,7 +268,7 @@ export default function DashboardPage() {
     const fetchHistory = async () => {
       try {
         const res = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/history?sessionId=${selectedSessionId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/history?sessionId=${selectedSessionId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -325,7 +326,7 @@ export default function DashboardPage() {
       }
 
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/generate`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/generate`,
         {
           method: "POST",
           headers,
@@ -351,17 +352,14 @@ export default function DashboardPage() {
     setChatMessages((prev) => [...prev, userMessage]);
 
     try {
-      const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/edit`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({ prompt: editMessage, code: output }),
-        }
-      );
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/edit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ prompt: editMessage, code: output }),
+      });
 
       const data = await res.json();
       const aiResponse = {
@@ -386,7 +384,7 @@ export default function DashboardPage() {
   const handleDeleteGeneration = async (id) => {
     try {
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/history/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/history/${id}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -406,23 +404,20 @@ export default function DashboardPage() {
       const generation = generations.find((g) => g._id === id);
       if (!generation) return;
 
-      const aiRes = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/edit`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({ prompt: newPrompt, code: generation.code }),
-        }
-      );
+      const aiRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/edit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ prompt: newPrompt, code: generation.code }),
+      });
 
       const aiData = await aiRes.json();
       const updatedCode = aiData.code || generation.code;
 
       const dbRes = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/history/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/history/${id}`,
         {
           method: "PUT",
           headers: {
@@ -444,6 +439,12 @@ export default function DashboardPage() {
     } catch (err) {
       console.error("Error editing generation", err);
     }
+  };
+
+  const handlePreviewGeneration = (code, css) => {
+    setOutput(code);
+    setCssCode(css || "");
+    setShowPreviewModal(true);
   };
 
   if (isCheckingAuth) return null;
@@ -547,6 +548,7 @@ export default function DashboardPage() {
                 generations={generations}
                 onDelete={handleDeleteGeneration}
                 onEdit={handleEditGeneration}
+                onPreview={handlePreviewGeneration}
               />
             </div>
           </div>
@@ -591,6 +593,7 @@ export default function DashboardPage() {
                 generations={generations}
                 onDelete={handleDeleteGeneration}
                 onEdit={handleEditGeneration}
+                onPreview={handlePreviewGeneration}
               />
             </div>
           </aside>

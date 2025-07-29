@@ -110,8 +110,7 @@ export default function TestCORS() {
               <strong>Client URL:</strong> http://localhost:3000
             </p>
             <p>
-              <strong>Server URL:</strong>{" "}
-              https://component-generator-backend-4l1y.onrender.com
+              <strong>Server URL:</strong> http://localhost:5000
             </p>
             <p>
               <strong>Credentials:</strong> Enabled

@@ -15,7 +15,7 @@ export default function SessionSelector({
     const fetchSessions = async () => {
       try {
         const res = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/sessions`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/sessions`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -37,7 +37,7 @@ export default function SessionSelector({
 
     try {
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/sessions`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/sessions`,
         {
           method: "POST",
           headers: {

@@ -1,9 +1,7 @@
 // API Configuration
 export const API_CONFIG = {
   // Get the API URL from environment variables
-  baseURL:
-    process.env.REACT_APP_API_URL ||
-    "https://component-generator-backend-4l1y.onrender.com",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000",
 
   // API endpoints
   endpoints: {

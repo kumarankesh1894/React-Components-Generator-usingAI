@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Sandpack } from "@codesandbox/sandpack-react";
+import { SandpackProvider, SandpackPreview } from "@codesandbox/sandpack-react";
 import { atomDark } from "@codesandbox/sandpack-themes";
 import generateSandboxFiles from "../utils/generateSanboxFiles";
 
@@ -10,17 +10,33 @@ export default function LivePreview({ code, css }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!code?.trim()) return;
+    console.log("🔍 LivePreview - Received code:", code?.substring(0, 200) + "...");
+    console.log("🔍 LivePreview - Received CSS:", css?.substring(0, 100) + "...");
+    
+    if (!code?.trim()) {
+      setError("No code provided for preview");
+      return;
+    }
 
     try {
       const { files, isTSX } = generateSandboxFiles(code, css);
+      console.log("🔍 Generated files keys:", Object.keys(files));
+      console.log("🔍 Generated files content:");
+      console.log("📄 /App file:", files[Object.keys(files).find(key => key.includes('App'))]);
+      console.log("📄 Component file:", files[Object.keys(files).find(key => !key.includes('App') && !key.includes('style'))]);
+      console.log("🔍 All files:", files);
+      
+      if (!files || Object.keys(files).length === 0) {
+        throw new Error("No files generated");
+      }
+      
       setFiles(files);
       setIsTSX(isTSX);
       setError("");
     } catch (err) {
       console.error("Live Preview Error:", err);
       setFiles(null);
-      setError("⚠️ Live Preview Error: Something went wrong rendering the component.");
+      setError(`⚠️ Live Preview Error: ${err.message}`);
     }
   }, [code, css]);
 
@@ -34,25 +50,22 @@ export default function LivePreview({ code, css }) {
         </div>
       ) : files ? (
         <div className="flex-1 overflow-hidden rounded-lg">
-          <Sandpack
+          <SandpackProvider
             template={isTSX ? "react-ts" : "react"}
             files={files}
             theme={atomDark}
             options={{
-              showConsole: false,
-              showTabs: false,
-              wrapContent: true,
-              editorHeight: 0,
-              previewHeight: "100%",
               autorun: true,
               recompileMode: "immediate",
-              initMode: "user-visible",
-              showNavigator: false,
-              showLineNumbers: false,
-              showInlineErrors: true,
-              layout: "preview"
+              initMode: "user-visible"
             }}
-          />
+          >
+            <SandpackPreview
+              style={{ height: "100%", width: "100%" }}
+              showOpenInCodeSandbox={false}
+              showRefreshButton={true}
+            />
+          </SandpackProvider>
         </div>
       ) : (
         <div className="flex-1 flex items-center justify-center text-gray-400">

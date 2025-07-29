@@ -2,7 +2,21 @@
 
 import { useState } from "react";
 
-export default function GenerationHistory({ generations, onDelete, onEdit }) {
+const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    alert('Code copied to clipboard');
+  };
+
+  const downloadCode = (filename, content) => {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
+export default function GenerationHistory({ generations, onDelete, onEdit, onPreview }) {
   const [editingId, setEditingId] = useState(null);
   const [editPrompt, setEditPrompt] = useState("");
 
@@ -75,7 +89,28 @@ export default function GenerationHistory({ generations, onDelete, onEdit }) {
                 <div className="space-y-2">
                   <div>
                     <p className="text-gray-300 font-medium text-sm">Prompt:</p>
-                    <p className="text-gray-200 text-sm">{g.prompt}</p>
+                  <p className="text-gray-200 text-sm">{g.prompt}</p>
+
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={() => onPreview(g.code, g.css || '')}
+                      className="text-green-400 text-xs hover:text-green-300 transition-colors"
+                    >
+                      Live Preview
+                    </button>
+                    <button
+                      onClick={() => copyToClipboard(g.code)}
+                      className="text-blue-400 text-xs hover:text-blue-300 transition-colors"
+                    >
+                      Copy
+                    </button>
+                    <button
+                      onClick={() => downloadCode(`component-${g._id}.js`, g.code)}
+                      className="text-purple-400 text-xs hover:text-purple-300 transition-colors"
+                    >
+                      Download
+                    </button>
+                  </div>
                   </div>
                   <div>
                     <p className="text-gray-300 font-medium text-sm mb-2">Code:</p>
