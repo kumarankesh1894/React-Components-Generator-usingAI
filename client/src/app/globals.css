@@ -1,1 +1,369 @@
 @import "tailwindcss";
+
+/* Global Variables */
+:root {
+  --primary-bg: #0a0a0f;
+  --secondary-bg: #1a1a2e;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --accent-purple: #8b5cf6;
+  --accent-blue: #3b82f6;
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+}
+
+/* Glass Effect Utilities */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--secondary-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-purple);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9f7aea;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.shimmer {
+  animation: shimmer 1.2s ease-in-out infinite;
+  background: linear-gradient(to right, #f6f7f8 8%, #edeef1 18%, #f6f7f8 33%);
+  background-size: 800px 104px;
+}
+
+/* Button Styles */
+.btn-primary {
+  background: linear-gradient(to right, #8b5cf6, #3b82f6);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  /* Touch-friendly sizing */
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(to right, #7c3aed, #2563eb);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transform: scale(1.05);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  /* Touch-friendly sizing */
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+.btn-ghost {
+  color: #d1d5db;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  /* Touch-friendly sizing */
+  min-height: 40px;
+  touch-action: manipulation;
+}
+
+.btn-ghost:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-ghost:active {
+  transform: scale(0.95);
+}
+
+/* Input Styles */
+.input-glass {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  /* Touch-friendly sizing */
+  min-height: 44px;
+  font-size: 16px; /* Prevents zoom on iOS */
+}
+
+.input-glass::placeholder {
+  color: #9ca3af !important;
+}
+
+.input-glass:focus {
+  outline: none;
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2) !important;
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Ensure autofill styles don't override our colors */
+.input-glass:-webkit-autofill,
+.input-glass:-webkit-autofill:hover,
+.input-glass:-webkit-autofill:focus,
+.input-glass:-webkit-autofill:active {
+  -webkit-text-fill-color: #ffffff !important;
+  -webkit-box-shadow: 0 0 0 30px rgba(31, 38, 60, 0.8) inset !important;
+  box-shadow: 0 0 0 30px rgba(31, 38, 60, 0.8) inset !important;
+  background-color: transparent !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Additional autofill fix for different states */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-transition: background-color 5000s ease-in-out 0s;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Specific styling for different input types */
+input[type="text"].input-glass,
+input[type="email"].input-glass,
+input[type="password"].input-glass {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Password field specific autofill handling */
+input[type="password"]:-webkit-autofill,
+input[type="password"]:-webkit-autofill:hover,
+input[type="password"]:-webkit-autofill:focus,
+input[type="password"]:-webkit-autofill:active {
+  -webkit-text-fill-color: #ffffff !important;
+  -webkit-box-shadow: 0 0 0 30px rgba(31, 38, 60, 0.8) inset !important;
+  box-shadow: 0 0 0 30px rgba(31, 38, 60, 0.8) inset !important;
+  background-color: transparent !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Text field specific autofill handling */
+input[type="text"]:-webkit-autofill,
+input[type="text"]:-webkit-autofill:hover,
+input[type="text"]:-webkit-autofill:focus,
+input[type="text"]:-webkit-autofill:active {
+  -webkit-text-fill-color: #ffffff !important;
+  -webkit-box-shadow: 0 0 0 30px rgba(31, 38, 60, 0.8) inset !important;
+  box-shadow: 0 0 0 30px rgba(31, 38, 60, 0.8) inset !important;
+  background-color: transparent !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Force consistent styling across all browsers */
+input.input-glass {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .input-glass {
+    padding: 0.875rem 1rem;
+    font-size: 16px;
+  }
+}
+
+/* Card Styles */
+.card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive card padding */
+@media (max-width: 640px) {
+  .card {
+    padding: 1rem;
+    border-radius: 0.5rem;
+  }
+  
+  .glass-card {
+    padding: 1rem;
+    border-radius: 0.5rem;
+  }
+}
+
+/* Loading Spinner */
+.spinner {
+  border: 2px solid transparent;
+  border-top: 2px solid var(--accent-purple);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  /* Reduce blur for better performance on mobile */
+  .glass,
+  .glass-card,
+  .input-glass,
+  .btn-secondary,
+  .card {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  /* Ensure touch targets are accessible */
+  button, 
+  input, 
+  textarea, 
+  select {
+    font-size: 16px;
+  }
+  
+  /* Prevent horizontal scroll */
+  body {
+    overflow-x: hidden;
+  }
+  
+  /* Better spacing for mobile */
+  .text-5xl {
+    font-size: 2.5rem;
+    line-height: 1;
+  }
+}

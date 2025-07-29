@@ -7,8 +7,65 @@ import GeneratedOutput from "./components/GeneratedOutput";
 import EditChat from "./components/EditChat";
 import GenerationHistory from "./components/GenerationHistory";
 import SessionSelector from "./components/SessionSelector";
-import LivePreview from "./components/Livepreview";
 import CodeTabs from "./components/CodeTabs";
+import PreviewModal from "./components/PreviewModal";
+
+const Sidebar = ({ onSelectSession, selectedSessionId, onCreateSession, chatMessages, editMessage, setEditMessage, handleEditSubmit, loading, isOpen, onClose }) => (
+  <>
+    {/* Mobile overlay */}
+    {isOpen && (
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" 
+        onClick={onClose}
+      />
+    )}
+    
+    <aside className={`
+      fixed lg:relative top-0 left-0 h-screen lg:h-screen
+      w-80 glass p-4 flex flex-col overflow-hidden
+      transform transition-transform duration-300 ease-in-out z-50
+      ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+    `}>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-purple-600 rounded-full"></div>
+          <h1 className="text-xl font-bold">AI Components</h1>
+        </div>
+        {/* Close button for mobile */}
+        <button 
+          onClick={onClose}
+          className="lg:hidden p-2 hover:bg-white/10 rounded-full transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      {/* Session Selector */}
+      <div className="mb-6 flex-shrink-0">
+        <SessionSelector 
+          selectedSessionId={selectedSessionId} 
+          onSelectSession={onSelectSession}
+          onCreateSession={onCreateSession}
+        />
+      </div>
+      
+      {/* Chat Section */}
+      <div className="flex-1 flex flex-col min-h-0">
+        <h2 className="text-lg font-semibold mb-3 flex-shrink-0">Chat</h2>
+        <EditChat
+          chatMessages={chatMessages}
+          editMessage={editMessage}
+          setEditMessage={setEditMessage}
+          handleEditSubmit={handleEditSubmit}
+          loading={loading}
+        />
+      </div>
+    </aside>
+  </>
+);
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -21,8 +78,11 @@ export default function DashboardPage() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [generations, setGenerations] = useState([]);
   const [selectedSessionId, setSelectedSessionId] = useState(null);
-  const [expandedSection, setExpandedSection] = useState("prompt");
-  
+  const [activeTab, setActiveTab] = useState("jsx"); // jsx, css
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+
   // Auto-save related state and refs
   const autoSaveTimeoutRef = useRef(null);
   const lastSavedStateRef = useRef(null);
@@ -34,10 +94,9 @@ export default function DashboardPage() {
       code: output,
       css: cssCode,
       chatMessages,
-      expandedSection,
       sessionId: selectedSessionId,
     };
-  }, [prompt, output, cssCode, chatMessages, expandedSection, selectedSessionId]);
+  }, [prompt, output, cssCode, chatMessages, selectedSessionId]);
 
   // Helper function to check if state has changed
   const hasStateChanged = useCallback((currentState) => {
@@ -48,7 +107,6 @@ export default function DashboardPage() {
       lastSaved.prompt !== currentState.prompt ||
       lastSaved.code !== currentState.code ||
       lastSaved.css !== currentState.css ||
-      lastSaved.expandedSection !== currentState.expandedSection ||
       JSON.stringify(lastSaved.chatMessages) !== JSON.stringify(currentState.chatMessages)
     );
   }, []);
@@ -72,7 +130,6 @@ export default function DashboardPage() {
           currentCss: currentState.css,
           currentPrompt: currentState.prompt,
           chatMessages: currentState.chatMessages,
-          expandedSection: currentState.expandedSection,
         }),
       });
 
@@ -99,15 +156,12 @@ export default function DashboardPage() {
     }, 2000); // 2 second debounce
   }, [getCurrentState, performAutoSave]);
 
-  // Auto-save effect - monitor changes in prompt, output, CSS, chat messages, and expanded section
+  // Auto-save effect - monitor changes in prompt, output, CSS, chat messages
   useEffect(() => {
     if (!selectedSessionId) return;
-    
-    // Skip auto-save during loading to avoid saving intermediate states
     if (loading) return;
-    
     triggerAutoSave();
-  }, [prompt, output, cssCode, chatMessages, expandedSection, selectedSessionId, loading, triggerAutoSave]);
+  }, [prompt, output, cssCode, chatMessages, selectedSessionId, loading, triggerAutoSave]);
 
   // Resume session effect - load saved state when session changes
   useEffect(() => {
@@ -123,27 +177,21 @@ export default function DashboardPage() {
         
         if (response.ok) {
           const savedState = await response.json();
-          
-          // Restore saved state
           if (savedState.currentPrompt) setPrompt(savedState.currentPrompt);
           if (savedState.currentCode) setOutput(savedState.currentCode);
           if (savedState.currentCss) setCssCode(savedState.currentCss);
           if (savedState.chatMessages) setChatMessages(savedState.chatMessages);
-          if (savedState.expandedSection) setExpandedSection(savedState.expandedSection);
           
-          // Update last saved state reference
           lastSavedStateRef.current = {
             prompt: savedState.currentPrompt || '',
             code: savedState.currentCode || '',
             css: savedState.currentCss || '',
             chatMessages: savedState.chatMessages || [],
-            expandedSection: savedState.expandedSection || 'prompt',
             sessionId: selectedSessionId,
           };
           
           console.log('Session state resumed successfully');
         } else if (response.status === 404) {
-          // No saved state exists for this session - this is normal for new sessions
           console.log('No saved state found for session - starting fresh');
         } else {
           console.warn('Failed to resume session state:', response.status);
@@ -208,7 +256,6 @@ export default function DashboardPage() {
     setChatMessages([]);
 
     try {
-      // Prepare form data for multipart upload if images are present
       let requestBody;
       let headers = {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -224,7 +271,6 @@ export default function DashboardPage() {
         });
         
         requestBody = formData;
-        // Don't set Content-Type header - let browser set it with boundary for multipart
       } else {
         headers['Content-Type'] = 'application/json';
         requestBody = JSON.stringify({ prompt, sessionId: selectedSessionId });
@@ -239,7 +285,6 @@ export default function DashboardPage() {
       const data = await res.json();
       setOutput(data.code || "// No code returned");
       setCssCode(data.css || "");
-      setExpandedSection("output");
     } catch (err) {
       console.error('Generation error:', err);
       setOutput("// Error generating code");
@@ -324,7 +369,6 @@ export default function DashboardPage() {
           prev.map((g) => (g._id === id ? { ...g, prompt: newPrompt, code: updatedCode } : g))
         );
         setOutput(updatedCode);
-        setExpandedSection("output");
       }
     } catch (err) {
       console.error("Error editing generation", err);
@@ -334,107 +378,120 @@ export default function DashboardPage() {
   if (isCheckingAuth) return null;
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="bg-black text-white px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-        <h1 className="text-xl font-bold">AI Component Generator</h1>
-        <button onClick={handleLogout} className="bg-red-500 px-4 py-2 rounded">Logout</button>
-      </header>
-
-      {/* Main */}
-      <main className="flex-1 overflow-y-auto p-4 bg-gray-50">
-        <div className="max-w-4xl mx-auto space-y-4">
-
-          {/* Section: Prompt Input */}
-          <section className="bg-white shadow rounded p-4">
-            <button
-              className="w-full text-left font-semibold text-lg"
-              onClick={() => setExpandedSection("prompt")}
+    <div className="min-h-screen flex text-white relative">
+      <Sidebar 
+        onSelectSession={setSelectedSessionId} 
+        selectedSessionId={selectedSessionId}
+        onCreateSession={setSelectedSessionId}
+        chatMessages={chatMessages}
+        editMessage={editMessage}
+        setEditMessage={setEditMessage}
+        handleEditSubmit={handleEditSubmit}
+        loading={loading}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
+      
+      <main className="flex-1 flex flex-col p-2 sm:p-4 max-h-screen overflow-hidden lg:ml-0">
+        {/* Header */}
+        <header className="flex justify-between items-center mb-4 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            {/* Mobile menu button */}
+            <button 
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 hover:bg-white/10 rounded-full transition-colors"
             >
-              ▶ Prompt Input
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
             </button>
-            {expandedSection === "prompt" && (
-              <div className="mt-4">
-                <PromptInput
-                  prompt={prompt}
-                  setPrompt={setPrompt}
-                  handleGenerate={handleGenerate}
-                  loading={loading}
-                />
-              </div>
-            )}
-          </section>
-
-          {/* Section: Output + Live Preview */}
-          {output && (
-            <section className="bg-white shadow rounded p-4">
-              <button
-                className="w-full text-left font-semibold text-lg"
-                onClick={() => setExpandedSection("output")}
-              >
-                ▶ Generated Output + Preview
-              </button>
-              {expandedSection === "output" && (
-                <div className="mt-4 space-y-4">
-                  <GeneratedOutput/>
-                  <CodeTabs jsxCode={output} cssCode={cssCode} />
-                  <LivePreview code={output} css={cssCode} />
-
-                </div>
-              )}
-              
-            </section>
-          )}
-
-          {/* Section: Edit Chat */}
-          {output && (
-            <section className="bg-white shadow rounded p-4">
-              <button
-                className="w-full text-left font-semibold text-lg"
-                onClick={() => setExpandedSection("edit")}
-              >
-                ▶ Chat-based Editing
-              </button>
-              {expandedSection === "edit" && (
-                <div className="mt-4">
-                  <EditChat
-                    chatMessages={chatMessages}
-                    editMessage={editMessage}
-                    setEditMessage={setEditMessage}
-                    handleEditSubmit={handleEditSubmit}
-                    loading={loading}
-                  />
-                </div>
-              )}
-            </section>
-          )}
-
-          {/* Section: History + Sessions */}
-          <section className="bg-white shadow rounded p-4">
-            <button
-              className="w-full text-left font-semibold text-lg"
-              onClick={() => setExpandedSection("history")}
+            <h1 className="text-xl sm:text-2xl font-bold">AI Chat Helper</h1>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {/* Mobile history toggle */}
+            <button 
+              onClick={() => setHistoryOpen(!historyOpen)}
+              className="md:hidden p-2 hover:bg-white/10 rounded-full transition-colors"
             >
-              ▶ Generation History & Sessions
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </button>
-            {expandedSection === "history" && (
-              <div className="mt-4 space-y-4">
-                <SessionSelector
-                  selectedSessionId={selectedSessionId}
-                  onSelectSession={setSelectedSessionId}
-                  onCreateSession={setSelectedSessionId}
-                />
-                <GenerationHistory
-                  generations={generations}
-                  onDelete={handleDeleteGeneration}
-                  onEdit={handleEditGeneration}
-                />
-              </div>
-            )}
-          </section>
+            <button onClick={handleLogout} className="btn-secondary text-sm sm:text-base">Logout</button>
+          </div>
+        </header>
 
+        {/* Mobile History Panel */}
+        {historyOpen && (
+          <div className="md:hidden mb-4">
+            <div className="card max-h-64 overflow-hidden">
+              <div className="flex justify-between items-center px-4 py-3 border-b border-white/20">
+                <h2 className="text-lg font-semibold">Generation History</h2>
+                <button 
+                  onClick={() => setHistoryOpen(false)}
+                  className="p-1 hover:bg-white/10 rounded"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <GenerationHistory
+                generations={generations}
+                onDelete={handleDeleteGeneration}
+                onEdit={handleEditGeneration}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col md:flex-row gap-4 overflow-hidden min-h-0">
+          {/* Main Panel: Code Editor and Prompt */}
+          <div className="flex-1 flex flex-col gap-4 min-h-0">
+            <div className="card flex-1 flex flex-col overflow-hidden min-h-0">
+              <CodeTabs 
+                jsxCode={output} 
+                cssCode={cssCode} 
+                activeTab={activeTab} 
+                onTabChange={setActiveTab}
+                onShowPreview={() => setShowPreviewModal(true)}
+              />
+              <GeneratedOutput code={output} activeTab={activeTab} cssCode={cssCode} />
+            </div>
+            
+            <div className="card flex-shrink-0">
+              <PromptInput
+                prompt={prompt}
+                setPrompt={setPrompt}
+                handleGenerate={handleGenerate}
+                loading={loading}
+              />
+            </div>
+          </div>
+
+          {/* Desktop History Panel */}
+          <aside className="hidden md:flex w-80 lg:w-96 flex-col min-h-0">
+            <div className="card flex-1 flex flex-col overflow-hidden min-h-0">
+              <h2 className="text-lg font-semibold px-4 py-3 border-b border-white/20 flex-shrink-0">Generation History</h2>
+              <GenerationHistory
+                generations={generations}
+                onDelete={handleDeleteGeneration}
+                onEdit={handleEditGeneration}
+              />
+            </div>
+          </aside>
         </div>
       </main>
+      
+      {/* Preview Modal */}
+      <PreviewModal 
+        isOpen={showPreviewModal} 
+        onClose={() => setShowPreviewModal(false)}
+        code={output}
+        css={cssCode}
+      />
     </div>
   );
 }

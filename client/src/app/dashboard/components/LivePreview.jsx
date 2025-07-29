@@ -25,33 +25,39 @@ export default function LivePreview({ code, css }) {
   }, [code, css]);
 
   return (
-    <div className="border rounded bg-black mt-2 p-4 text-white">
-      <h3 className="text-md font-semibold mb-2">Live Preview</h3>
-
+    <div className="h-full flex flex-col">
       {error ? (
-        <div className="bg-red-100 text-red-800 p-4 rounded-md shadow text-sm">
+        <div className="glass bg-red-500/10 border-red-500/20 p-4 rounded-lg text-red-400 text-sm">
           <strong>⚠️ Live Preview Error:</strong>
           <br />
           {error}
         </div>
       ) : files ? (
-        <Sandpack
-          template={isTSX ? "react-ts" : "react"}
-          files={files}
-          theme={atomDark}
-          options={{
-            showConsole: false,
-            showTabs: true,
-            wrapContent: true,
-            editorHeight: 300,
-            previewHeight: 300,
-            autorun: true,
-            recompileMode: "immediate",
-            initMode: "user-visible"
-          }}
-        />
+        <div className="flex-1 overflow-hidden rounded-lg">
+          <Sandpack
+            template={isTSX ? "react-ts" : "react"}
+            files={files}
+            theme={atomDark}
+            options={{
+              showConsole: false,
+              showTabs: false,
+              wrapContent: true,
+              editorHeight: 0,
+              previewHeight: "100%",
+              autorun: true,
+              recompileMode: "immediate",
+              initMode: "user-visible",
+              showNavigator: false,
+              showLineNumbers: false,
+              showInlineErrors: true,
+              layout: "preview"
+            }}
+          />
+        </div>
       ) : (
-        <p className="text-gray-300">Preparing preview...</p>
+        <div className="flex-1 flex items-center justify-center text-gray-400">
+          <p>Preparing preview...</p>
+        </div>
       )}
     </div>
   );

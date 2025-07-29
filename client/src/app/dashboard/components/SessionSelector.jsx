@@ -50,31 +50,35 @@ export default function SessionSelector({ selectedSessionId, onSelectSession, on
   };
 
   return (
-    <div className="mb-4">
-      <label className="block font-semibold mb-2">Select a Session:</label>
-      <select
-        value={selectedSessionId || ""}
-        onChange={(e) => onSelectSession(e.target.value)}
-        className="border px-3 py-2 w-full rounded"
-      >
-        <option value="">-- Select Session --</option>
-        {sessions.map((session) => (
-          <option key={session._id} value={session._id}>
-            {session.name}
-          </option>
-        ))}
-      </select>
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-2">Select a Session:</label>
+        <select
+          value={selectedSessionId || ""}
+          onChange={(e) => onSelectSession(e.target.value)}
+          className="input-glass w-full"
+        >
+          <option value="" className="bg-gray-800 text-white">-- Select Session --</option>
+          {sessions.map((session) => (
+            <option key={session._id} value={session._id} className="bg-gray-800 text-white">
+              {session.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      <div className="mt-3">
+      <div className="space-y-2">
         <input
           value={newSessionName}
           onChange={(e) => setNewSessionName(e.target.value)}
           placeholder="New session name"
-          className="border px-3 py-2 rounded w-full mb-2"
+          className="input-glass w-full"
+          onKeyPress={(e) => e.key === 'Enter' && handleCreate()}
         />
         <button
           onClick={handleCreate}
-          className="bg-blue-500 text-white px-4 py-2 rounded w-full"
+          disabled={!newSessionName.trim()}
+          className="btn-primary w-full"
         >
           Create New Session
         </button>

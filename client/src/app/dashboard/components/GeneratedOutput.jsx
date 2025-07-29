@@ -1,13 +1,40 @@
 // components/GeneratedOutput.jsx
 "use client";
 
-export default function GeneratedOutput() {
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+
+export default function GeneratedOutput({ code, activeTab, cssCode }) {
+  const getLanguage = () => {
+    switch (activeTab) {
+      case 'css': return 'css';
+      default: return 'jsx';
+    }
+  };
+
+  const getCode = () => {
+    if (activeTab === 'css') {
+      return cssCode || '/* No CSS code generated yet... */';
+    }
+    return code || '// No JSX code generated yet...';
+  };
+
   return (
-    <div className="p-4 border rounded bg-white">
-      <h2 className="text-lg font-semibold mb-2">Generated Component</h2>
-      <p className="text-gray-500 text-sm">
-        Preview and code are shown below.
-      </p>
+    <div className="flex-1 overflow-hidden">
+      <div className="h-full overflow-auto">
+        <SyntaxHighlighter 
+          language={getLanguage()} 
+          style={vscDarkPlus}
+          customStyle={{
+            margin: 0,
+            padding: '1rem',
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            borderRadius: '0.5rem',
+          }}
+        >
+          {getCode()}
+        </SyntaxHighlighter>
+      </div>
     </div>
   );
 }

@@ -7,8 +7,7 @@ import { materialDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
-const CodeTabs = ({ jsxCode, cssCode }) => {
-  const [activeTab, setActiveTab] = useState("jsx");
+const CodeTabs = ({ jsxCode, cssCode, activeTab, onTabChange, onShowPreview }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -31,46 +30,53 @@ const CodeTabs = ({ jsxCode, cssCode }) => {
     saveAs(blob, "component-files.zip");
   };
 
+  const tabs = [
+    { id: "jsx", label: "JSX / TSX", language: "jsx" },
+    { id: "css", label: "CSS", language: "css" }
+  ];
+
   return (
-    <div className="bg-white rounded shadow mt-4">
+    <div>
       {/* Tabs */}
-      <div className="flex border-b">
-        <button
-          onClick={() => setActiveTab("jsx")}
-          className={`px-4 py-2 ${activeTab === "jsx" ? "bg-blue-100 font-semibold" : ""}`}
-        >
-          JSX / TSX
-        </button>
-        <button
-          onClick={() => setActiveTab("css")}
-          className={`px-4 py-2 ${activeTab === "css" ? "bg-blue-100 font-semibold" : ""}`}
-        >
-          CSS
-        </button>
-      </div>
-
-      {/* Code Viewer */}
-      <div className="p-4 overflow-auto max-h-[500px]">
-        <SyntaxHighlighter language={activeTab === "css" ? "css" : "tsx"} style={materialDark}>
-          {activeTab === "css" ? cssCode || "/* No CSS Code */" : jsxCode || "// No JSX Code"}
-        </SyntaxHighlighter>
-      </div>
-
-      {/* Actions */}
-      <div className="flex gap-2 px-4 pb-4">
-        <button
-          onClick={handleCopy}
-          className="bg-blue-500 text-white px-3 py-1 rounded text-sm"
-        >
-          {copied ? "Copied!" : "Copy"}
-        </button>
-
-        <button
-          onClick={handleDownloadZip}
-          className="bg-green-600 text-white px-3 py-1 rounded text-sm"
-        >
-          Download .zip
-        </button>
+      <div className="flex flex-col sm:flex-row border-b border-white/20 mb-4">
+        <div className="flex">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => onTabChange(tab.id)}
+              className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
+                activeTab === tab.id
+                  ? "text-purple-400 border-b-2 border-purple-400"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        
+        {/* Actions */}
+        <div className="flex gap-1 sm:gap-2 mt-2 sm:mt-0 sm:ml-auto overflow-x-auto">
+          <button
+            onClick={handleCopy}
+            className="btn-ghost text-xs whitespace-nowrap px-2 sm:px-3"
+          >
+            {copied ? "Copied!" : "Copy"}
+          </button>
+          <button
+            onClick={onShowPreview}
+            className="btn-ghost text-xs whitespace-nowrap px-2 sm:px-3"
+          >
+            <span className="hidden sm:inline">Live Preview</span>
+            <span className="sm:hidden">Preview</span>
+          </button>
+          <button
+            onClick={handleDownloadZip}
+            className="btn-ghost text-xs whitespace-nowrap px-2 sm:px-3"
+          >
+            Download
+          </button>
+        </div>
       </div>
     </div>
   );
