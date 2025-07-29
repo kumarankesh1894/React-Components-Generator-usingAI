@@ -30,16 +30,16 @@ body {
 /* Glass Effect Utilities */
 .glass {
   background: var(--glass-bg);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
 }
 
 .glass-card {
   background: var(--glass-bg);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
   border-radius: 0.75rem;
@@ -146,8 +146,8 @@ body {
 
 .btn-secondary {
   background: var(--glass-bg);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
   color: white;
   padding: 0.75rem 1.5rem;
@@ -193,8 +193,8 @@ body {
 /* Input Styles */
 .input-glass {
   background: rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
   color: #ffffff !important;
   padding: 0.75rem 1rem;
@@ -295,8 +295,8 @@ input.input-glass {
 /* Card Styles */
 .card {
   background: var(--glass-bg);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
   border-radius: 0.75rem;
@@ -344,8 +344,8 @@ input.input-glass {
   .input-glass,
   .btn-secondary,
   .card {
-    backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
   }
   
   /* Ensure touch targets are accessible */
