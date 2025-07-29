@@ -30,11 +30,11 @@ export default function PreviewModal({ isOpen, onClose, code, css }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
-      
+
       {/* Modal */}
       <div className="relative w-full max-w-6xl mx-4 h-5/6 glass-card animate-fadeInUp">
         {/* Header */}
@@ -44,22 +44,22 @@ export default function PreviewModal({ isOpen, onClose, code, css }) {
             onClick={onClose}
             className="btn-ghost p-2 hover:bg-white/10 rounded-lg"
           >
-            <svg 
-              className="w-5 h-5" 
-              fill="none" 
-              stroke="currentColor" 
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M6 18L18 6M6 6l12 12" 
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
               />
             </svg>
           </button>
         </div>
-        
+
         {/* Preview Content */}
         <div className="flex-1 h-full">
           <LivePreview code={code} css={css} />
